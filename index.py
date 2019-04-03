@@ -44,7 +44,6 @@ test_list = [
 
 detectedFaces = []
 previousDetectedFaces = []
-fps = FPS().start()
 
 counter = 0
 while True:
