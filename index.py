@@ -4,29 +4,17 @@ import imutils
 import cv2
 import collections
 
-# This is a super simple (but slow) example of running face recognition on live video from your webcam.
-# There's a second example that's a little more complicated but runs faster.
-
-# PLEASE NOTE: This example requires OpenCV (the `cv2` library) to be installed only to read from your webcam.
-# OpenCV is *not* required to use the face_recognition library. It's only required if you want to run this
-# specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
-
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
-
-# Load a sample picture and learn how to recognize it.
-# obama_image = face_recognition.load_image_file("obama.jpg")
-# obama_face_encoding = face_recognition.face_encodings(obama_image)[0]
 
 matt_image = face_recognition.load_image_file("matt.jpg")
 matt_face_encoding = face_recognition.face_encodings(matt_image)[0]
 
+shane_image = face_recognition.load_image_file("shane9.png")
+shane_face_encoding = face_recognition.face_encodings(shane_image)[0]
+
 dan_image = face_recognition.load_image_file("dan3.jpg")
 dan_face_encoding = face_recognition.face_encodings(dan_image)[0]
-
-# Load a second sample picture and learn how to recognize it.
-# biden_image = face_recognition.load_image_file("biden.jpg")
-# biden_face_encoding = face_recognition.face_encodings(biden_image)[0]
 
 ross_image = face_recognition.load_image_file("ross.jpg")
 ross_face_encoding = face_recognition.face_encodings(ross_image)[0]
@@ -36,19 +24,22 @@ ross_face_encoding = face_recognition.face_encodings(ross_image)[0]
 # Create arrays of known face encodings and their names
 known_face_encodings = [
     ross_face_encoding,
-    matt_face_encoding
-    # dan_face_encoding
+    matt_face_encoding,
+    dan_face_encoding,
+    shane_face_encoding
 ]
 known_face_names = [
     "Ross",
     "Matt",
-    "Dan"
+    "Dan",
+    "Shane"
 ]
 
 test_list = [
     "Ross",
     "Matt"
 ]
+
 
 detectedFaces = []
 previousDetectedFaces = []
@@ -57,7 +48,7 @@ while True:
     # Grab a single frame of video
     ret, frame = video_capture.read()
 
-    frame = imutils.resize(frame, width=600)
+    frame = imutils.resize(frame, width=300)
     # Convert the image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
     rgb_frame = frame[:, :, ::-1]
     # Find all the faces and face enqcodings in the frame of video
@@ -78,19 +69,19 @@ while True:
             first_match_index = matches.index(True)
             name = known_face_names[first_match_index]
             detectedFaces.append(name)
-            r = requests.put("http://pybot-api-pybot-api.1d35.starter-us-east-1.openshiftapps.com/intheroom/IsPresent?Name=" + name)
+
+            # Send request to server saying the person detected is now present in the room
+            r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=" + name)
             if(r.status_code == 200):
                 print(name + " is in the room")
-            # r = requests.get('https://www.google.co.uk')
-            # if(r.status_code == 200 and sendRequest):
-            #     print("request sent to server")
-            #     sendRequest = False
 
         if(name == "Unknown"):
-            r = requests.put("http://pybot-api-pybot-api.1d35.starter-us-east-1.openshiftapps.com/intheroom/IsPresent?Name=Unknown")
-            # print("unknown found")
             detectedFaces.append("Unknown")
+
+            # Send request to server saying the an unknown person is in the room
+            r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=Unknown")
             if(r.status_code == 200):
+                unknownFaceDetected = True
                 print("Unknown is in the room")
         
 
@@ -103,17 +94,17 @@ while True:
         font = cv2.FONT_HERSHEY_DUPLEX
         cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
     
-    print(detectedFaces)
 
+    # Check if there is any change in the detected faces
+    # If a person previously detected is no longer detected send request to server saying they have left the room
     for face in previousDetectedFaces:
         if(face not in detectedFaces):
-            r = requests.put("http://pybot-api-pybot-api.1d35.starter-us-east-1.openshiftapps.com/intheroom/HasLeft?Name=" + face)
+            r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=" + face)
             if(r.status_code == 200):
                 print(face + " has left the room")
 
     previousDetectedFaces = detectedFaces.copy()
 
-    # print(previousDetectedFace)
     detectedFaces = []
 
     # Display the resulting image
@@ -121,11 +112,14 @@ while True:
 
     # Hit 'q' on the keyboard to quit!
     if cv2.waitKey(25) & 0xFF == ord('q'):
+        # Empty room when exiting the app
+        r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=Dan")
+        r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=Shane")
+        r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=Matt")
+        r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=Ross")
+        r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=Unknown")
         break
 
 # Release handle to the webcam
 video_capture.release()
 cv2.destroyAllWindows()
-
-def sendRequestToServer():
-    sendRequestToServer.func_code = (lambda:None).func_code
