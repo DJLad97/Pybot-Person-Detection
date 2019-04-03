@@ -3,6 +3,7 @@ import requests
 import imutils
 import cv2
 import collections
+import base64
 
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
@@ -43,7 +44,9 @@ test_list = [
 
 detectedFaces = []
 previousDetectedFaces = []
+fps = FPS().start()
 
+counter = 0
 while True:
     # Grab a single frame of video
     ret, frame = video_capture.read()
@@ -69,7 +72,6 @@ while True:
             first_match_index = matches.index(True)
             name = known_face_names[first_match_index]
             detectedFaces.append(name)
-
             # Send request to server saying the person detected is now present in the room
             r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=" + name)
             if(r.status_code == 200):
@@ -84,7 +86,6 @@ while True:
                 unknownFaceDetected = True
                 print("Unknown is in the room")
         
-
 
         # Draw a box around the face
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
@@ -105,11 +106,26 @@ while True:
 
     previousDetectedFaces = detectedFaces.copy()
 
+    if(counter % 5 == 0):
+        print('taking screenshot')
+        ret, image = cv2.imencode(".jpg", frame)
+        b64 = base64.b64encode(image, )
+        # b64 = 'data:image/jpeg;base64,' + b64
+        # b64 = "%s%s" % ("data:image/jpeg;base64,", b64)
+        print(b64)
+        r = requests.put("http://projects.danjscott.co.uk/intheroom/setFrame", data = {'baseString': b64})
+
+        # cv2.imwriimte("image.jpg", frame)
+
+
     detectedFaces = []
+    # cv2.putText(frame, "Frame: " + str(currentFrame), (10, 100), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255), 1)
 
     # Display the resulting image
     cv2.imshow('Video', frame)
 
+    counter += 1
+    # print(counter)
     # Hit 'q' on the keyboard to quit!
     if cv2.waitKey(25) & 0xFF == ord('q'):
         # Empty room when exiting the app
