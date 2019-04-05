@@ -59,7 +59,7 @@ previousDetectedFaces = []
 load_dotenv()
 
 requestHeaders = {
-    "x-access-token": os.getenv("x_access_token")
+    "x-access-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW4iLCJwYXNzIjoiYWRtaW4iLCJpYXQiOjE1NTQzMzE3NDYsImV4cCI6MS4wMDAwMDAwMDAwMDE1NTQ1ZSsyMX0.qzxBdYfCGxcvQkhaCBsKiC7DVVG0wOZMe68axjw0x5M"
 }
 
 frameCounter = 0
