@@ -81,18 +81,23 @@ while True:
             first_match_index = matches.index(True)
             name = known_face_names[first_match_index]
             detectedFaces.append(name)
-            # Send request to server saying the person detected is now present in the room
-            r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=" + name, None, headers=requestHeaders)
-            if(r.status_code == 200):
+
+            if(name not in previousDetectedFaces):
+                jsonData = {'command' : 'Welcome, '+name,'user' : 'speaker','broadcast' : True }
+                # Send request to server saying the person detected is now present in the room
+                requests.post("http://localhost:8000/assistant", json=jsonData)
                 print(name + " is in the room")
+                r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=" + name, None, headers=requestHeaders)
 
         if(name == "Unknown"):
-            detectedFaces.append("Unknown")
+            if(name not in previousDetectedFaces):
+                detectedFaces.append("Unknown")
 
-            # Send request to server saying the an unknown person is in the room
-            r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=Unknown", None, headers=requestHeaders)
-            if(r.status_code == 200):
-                unknownFaceDetected = True
+                jsonData = {'command' : 'INTRUDER DETECTED. THE AUTHORITIES HAVE BEEN CONTACTED','user' : 'speaker','broadcast' : True }
+                requests.post("http://localhost:8000/assistant", json=jsonData)
+
+                # Send request to server saying the an unknown person is in the room
+                r = requests.put("http://projects.danjscott.co.uk/intheroom/IsPresent?Name=Unknown", None, headers=requestHeaders)
                 print("Unknown is in the room")
         
 
@@ -109,14 +114,16 @@ while True:
     # If a person previously detected is no longer detected send request to server saying they have left the room
     for face in previousDetectedFaces:
         if(face not in detectedFaces):
+            jsonData = {'command' : 'Goodbye, '+name,'user' : 'speaker','broadcast' : True }
+            requests.post("http://localhost:8000/assistant", json=jsonData)
+
             r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=" + face,  None, headers=requestHeaders)
-            if(r.status_code == 200):
-                print(face + " has left the room")
+            print(face + " has left the room")
+                
 
     previousDetectedFaces = detectedFaces.copy()
 
     if(frameCounter % 5 == 0):
-        print('taking screenshot')
         ret, image = cv2.imencode(".jpg", frame)
         b64 = base64.b64encode(image)
         r = requests.put("http://projects.danjscott.co.uk/intheroom/setFrame", data={'baseString': b64}, headers=requestHeaders)
