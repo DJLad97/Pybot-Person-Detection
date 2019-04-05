@@ -5,8 +5,16 @@ import cv2
 import collections
 import base64
 import os
+import threading
+
 from dotenv import load_dotenv
 
+def StartGoogleMiddleServer():
+    print("Node -> npm run start")
+    os.system("npm run start")
+
+server_thread = threading.Thread(target=StartGoogleMiddleServer)
+server_thread.start()
 
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
