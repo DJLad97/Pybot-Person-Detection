@@ -138,7 +138,8 @@ while True:
                 
 
     previousDetectedFaces = detectedFaces.copy()
-
+    
+    # Every 5 frames, take a screenshot of the current frame, convert it to base64 and send that to the database
     if(frameCounter % 5 == 0):
         ret, image = cv2.imencode(".jpg", frame)
         b64 = base64.b64encode(image)
