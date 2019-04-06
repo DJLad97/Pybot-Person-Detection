@@ -24,3 +24,7 @@
       person_face_encoding
   ]
 ```
+
+### Alexa/Google Code
+
+Both the files `ALEXACODEDUMP.js` & `GOOGLECODEDUMP.js` contain serverless functions that run on our Google Home and Alexa devices. When these apps are triggered by initiation command, they will send a request to our API and get the data that was asked for (e.g on Alexa, saying "ask who's in the room" will get Alexa to list out the people currently registered as in the room)
