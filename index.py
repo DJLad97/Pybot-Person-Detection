@@ -130,7 +130,7 @@ while True:
                 print(face + " has left the room")
 
             else:
-                jsonData = {'command' : 'Goodbye, '+name,'user' : 'speaker','broadcast' : True }
+                jsonData = {'command' : 'Goodbye, '+face,'user' : 'speaker','broadcast' : True }
                 requests.post("http://localhost:8000/assistant", json=jsonData)
 
                 r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=" + face,  None, headers=requestHeaders)
