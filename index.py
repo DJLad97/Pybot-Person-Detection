@@ -122,11 +122,19 @@ while True:
     # If a person previously detected is no longer detected send request to server saying they have left the room
     for face in previousDetectedFaces:
         if(face not in detectedFaces):
-            jsonData = {'command' : 'Goodbye, '+name,'user' : 'speaker','broadcast' : True }
-            requests.post("http://localhost:8000/assistant", json=jsonData)
+            if (name == "Unknown"):
+                jsonData = {'command' : 'The intruder has been removed from the room. Resuming protocols', 'user' : 'speaker','broadcast' : True }
+                requests.post("http://localhost:8000/assistant", json=jsonData)
 
-            r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=" + face,  None, headers=requestHeaders)
-            print(face + " has left the room")
+                r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=" + face,  None, headers=requestHeaders)
+                print(face + " has left the room")
+
+            else:
+                jsonData = {'command' : 'Goodbye, '+name,'user' : 'speaker','broadcast' : True }
+                requests.post("http://localhost:8000/assistant", json=jsonData)
+
+                r = requests.put("http://projects.danjscott.co.uk/intheroom/HasLeft?Name=" + face,  None, headers=requestHeaders)
+                print(face + " has left the room")
                 
 
     previousDetectedFaces = detectedFaces.copy()
